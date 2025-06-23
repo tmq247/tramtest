@@ -473,6 +473,8 @@ class Call:  # ✅ sửa lại
             return False
 
     async def change_stream(self, _, chat_id):
+        await SANKI.diagnose_stream(chat_id)
+
         check = db.get(chat_id)
         if not check or len(check) == 0:
             print(f"🚪 Queue empty, leaving call for chat {chat_id}")
@@ -487,6 +489,8 @@ class Call:  # ✅ sửa lại
         db[chat_id][0]["played"] = 0
     
         asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
+        print(f"👀 Watchdog task scheduled for chat {chat_id} with duration {duration}s")
+
     
         loop = await get_loop(chat_id)
         popped = None
@@ -545,6 +549,7 @@ class Call:  # ✅ sửa lại
             db[chat_id][0]["start_time"] = datetime.now()
             db[chat_id][0]["played"] = 0
             asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
+            print(f"👀 Watchdog task scheduled for chat {chat_id} with duration {duration}s")
             await SANKI.diagnose_stream(chat_id)
 
                 
