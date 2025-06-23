@@ -465,20 +465,19 @@ class Call:  # ✅ sửa lại
             print(f"❌ Error forcing next song for chat {chat_id}: {e}")
             return False
 
-    async def change_stream(self, client, chat_id):
+    async def change_stream(self, _, chat_id):
         check = db.get(chat_id)
         if not check or len(check) == 0:
             print(f"🚪 Queue empty, leaving call for chat {chat_id}")
             await _clear_(chat_id)
             assistant = await group_assistant(self, chat_id)
-            await self._reliable_leave_call(client, chat_id)
+            await self._reliable_leave_call(assistant, chat_id)
             return
     
         duration = check[0].get("seconds", 0)
         db[chat_id][0]["start_time"] = datetime.now()
         db[chat_id][0]["played"] = 0
     
-        # Gọi watchdog tại đây, bất kể có lỗi hay không
         asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
     
         loop = await get_loop(chat_id)
@@ -498,15 +497,17 @@ class Call:  # ✅ sửa lại
                 print(f"🚪 Queue empty after pop, leaving call for chat {chat_id}")
                 await _clear_(chat_id)
                 assistant = await group_assistant(self, chat_id)
-                await self._reliable_leave_call(client, chat_id)
+                await self._reliable_leave_call(assistant, chat_id)
                 return
     
-            # Chuẩn bị stream bài tiếp theo
-            stream = self.prepare_stream(check[0]["file"], is_video=(check[0]["streamtype"] == "video"))
+            stream = self.prepare_stream(
+                check[0]["file"], is_video=(check[0]["streamtype"] == "video")
+            )
+            assistant = await group_assistant(self, chat_id)
             for method_name in ["change_stream", "play", "switch"]:
-                if hasattr(client, method_name):
+                if hasattr(assistant, method_name):
                     try:
-                        await getattr(client, method_name)(chat_id, stream)
+                        await getattr(assistant, method_name)(chat_id, stream)
                         break
                     except Exception as e:
                         print(f"⚠️ {method_name} failed: {e}")
@@ -519,15 +520,13 @@ class Call:  # ✅ sửa lại
                 print(f"🚪 Queue empty after error, leaving call for chat {chat_id}")
                 await _clear_(chat_id)
                 assistant = await group_assistant(self, chat_id)
-                await self._reliable_leave_call(client, chat_id)
+                await self._reliable_leave_call(assistant, chat_id)
                 return
     
-            # Nếu còn bài thì cũng cần gọi lại watchdog (lại để chắc ăn)
             duration = check[0].get("seconds", 0)
             db[chat_id][0]["start_time"] = datetime.now()
             db[chat_id][0]["played"] = 0
             asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
-    
                 
         else:
             # Nếu có queue, tiếp tục play bài tiếp theo
