@@ -8,17 +8,14 @@ from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup
 from pytgcalls import PyTgCalls
 
-# Import với compatibility checking
-from pytgcalls.exceptions import AlreadyJoined, NotInCall, TelegramServerError
-from pytgcalls.exceptions import AlreadyJoinedError as AlreadyJoined
-from pytgcalls.exceptions import NoActiveGroupCall as NotInCall
+
 from pytgcalls.exceptions import TelegramServerError
          
 from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
 from pytgcalls.types.input_stream.quality import HighQualityAudio, MediumQualityVideo
-from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, MediumQualityVideo
-from pytgcalls.types import Update
+
 from pytgcalls.types.stream import StreamAudioEnded
+
     
 import config
 from SANKIXD import LOGGER, YouTube, app
@@ -768,11 +765,16 @@ class Call(PyTgCalls):
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "stream"
 
-    async def ping(self):
-        pings = []
-        if config.STRING1:
-            pings.append(self.one.ping)
-        return str(round(sum(pings) / len(pings), 3))
+import inspect
+async def ping(self):
+         pings = []
+         if config.STRING1:
+         ping_fn = getattr(self.one, "ping", None)
+         if inspect.iscoroutinefunction(ping_fn):
+            result = await ping_fn()
+            pings.append(result)
+         return str(round(sum(pings) / len(pings), 3)) if pings else "0"
+
 
 
     async def start(self):
