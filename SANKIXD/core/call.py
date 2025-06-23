@@ -778,17 +778,17 @@ async def ping(self):
 
 
 async def start(self):
-LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
-try:
-   for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
-       if client:
-           try:
-               await client.start()
-               LOGGER(__name__).info(f"Started client {i}")
-           except Exception as e:
-               LOGGER(__name__).error(f"Error starting client {i}: {e}")
-except Exception as e:
-   LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
+         LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
+         try:
+            for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
+                if client:
+                    try:
+                        await client.start()
+                        LOGGER(__name__).info(f"Started client {i}")
+                    except Exception as e:
+                        LOGGER(__name__).error(f"Error starting client {i}: {e}")
+         except Exception as e:
+            LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
 
 async def decorators(self):
          try:
