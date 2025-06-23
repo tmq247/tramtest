@@ -197,29 +197,8 @@ class Call(PyTgCalls):
         return left_successfully
 
     def prepare_stream(self, path, is_video=False, additional_params=""):
-      #  \"\"\"Prepare stream based on available types\"\"\"
-        try:
-            if is_video:
-                if AudioVideoPiped != str:
-                    return AudioVideoPiped(
-                        path,
-                        audio_parameters=HighQualityAudio(),
-                        video_parameters=MediumQualityVideo(),
-                        additional_ffmpeg_parameters=additional_params,
-                    )
-                else:
-                    return path  # Fallback to path string
-            else:
-                if AudioPiped != str:
-                    return AudioPiped(
-                        path,
-                        audio_parameters=HighQualityAudio(),
-                        additional_ffmpeg_parameters=additional_params,
-                    )
-                else:
-                    return path  # Fallback to path string
-        except:
-            return path
+        return path  # Với phiên bản mới, chỉ cần truyền str (path hoặc URL)
+
 
     async def join_call(
         self,
