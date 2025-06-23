@@ -736,61 +736,61 @@ class Call:  # ✅ sửa lại
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "stream"
 
-import inspect
-async def ping(self):
-         pings = []
-         if config.STRING1:
-                  ping_fn = getattr(self.one, "ping", None)
-                  if inspect.iscoroutinefunction(ping_fn):
-                     result = await ping_fn()
-                     pings.append(result)
-         return str(round(sum(pings) / len(pings), 3)) if pings else "0"
-
-
-
-async def start(self):
-         LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
-         try:
-            for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
-                if client:
-                    try:
-                        await client.start()
-                        LOGGER(__name__).info(f"Started client {i}")
-                    except Exception as e:
-                        LOGGER(__name__).error(f"Error starting client {i}: {e}")
-         except Exception as e:
-            LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
-
-async def decorators(self):
-         try:
-            # Simplified decorators với error handling
-            clients = [self.one, self.two, self.three, self.four, self.five]
-            
-            for client in clients:
-                if client:
-                    try:
-                        # Try to set decorators if methods exist
-                        if hasattr(client, 'on_kicked'):
-                            @client.on_kicked()
-                            async def on_kicked_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        if hasattr(client, 'on_closed_voice_chat'):
-                            @client.on_closed_voice_chat()
-                            async def on_closed_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        if hasattr(client, 'on_left'):
-                            @client.on_left()
-                            async def on_left_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        
-                    except Exception as e:
-                        LOGGER(__name__).error(f"Error setting decorators for client: {e}")
-                        
-         except Exception as e:
-            LOGGER(__name__).error(f"Error setting decorators: {e}")
+    import inspect
+    async def ping(self):
+             pings = []
+             if config.STRING1:
+                      ping_fn = getattr(self.one, "ping", None)
+                      if inspect.iscoroutinefunction(ping_fn):
+                         result = await ping_fn()
+                         pings.append(result)
+             return str(round(sum(pings) / len(pings), 3)) if pings else "0"
+    
+    
+    
+    async def start(self):
+             LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
+             try:
+                for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
+                    if client:
+                        try:
+                            await client.start()
+                            LOGGER(__name__).info(f"Started client {i}")
+                        except Exception as e:
+                            LOGGER(__name__).error(f"Error starting client {i}: {e}")
+             except Exception as e:
+                LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
+    
+    async def decorators(self):
+             try:
+                # Simplified decorators với error handling
+                clients = [self.one, self.two, self.three, self.four, self.five]
+                
+                for client in clients:
+                    if client:
+                        try:
+                            # Try to set decorators if methods exist
+                            if hasattr(client, 'on_kicked'):
+                                @client.on_kicked()
+                                async def on_kicked_handler(_, chat_id: int):
+                                    await self.stop_stream(chat_id)
+                            
+                            if hasattr(client, 'on_closed_voice_chat'):
+                                @client.on_closed_voice_chat()
+                                async def on_closed_handler(_, chat_id: int):
+                                    await self.stop_stream(chat_id)
+                            
+                            if hasattr(client, 'on_left'):
+                                @client.on_left()
+                                async def on_left_handler(_, chat_id: int):
+                                    await self.stop_stream(chat_id)
+                            
+                            
+                        except Exception as e:
+                            LOGGER(__name__).error(f"Error setting decorators for client: {e}")
+                            
+             except Exception as e:
+                LOGGER(__name__).error(f"Error setting decorators: {e}")
 
 
 SANKI = Call()
