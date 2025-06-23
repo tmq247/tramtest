@@ -9,48 +9,17 @@ from pyrogram.types import InlineKeyboardMarkup
 from pytgcalls import PyTgCalls
 
 # Import với compatibility checking
-try:
-    from pytgcalls.exceptions import AlreadyJoined, NotInCall, TelegramServerError
-    print("✅ New exceptions imported")
-except ImportError:
-    try:
-        from pytgcalls.exceptions import AlreadyJoinedError as AlreadyJoined
-        from pytgcalls.exceptions import NoActiveGroupCall as NotInCall
-        from pytgcalls.exceptions import TelegramServerError
-        print("✅ Old exceptions imported")
-    except ImportError:
-        AlreadyJoined = Exception
-        NotInCall = Exception  
-        TelegramServerError = Exception
-        print("⚠️ Using generic exceptions")
-
-# Import stream types dengan fallback
-try:
-    from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
-    from pytgcalls.types.input_stream.quality import HighQualityAudio, MediumQualityVideo
-    print("✅ New stream types imported")
-except ImportError:
-    try:
-        from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, MediumQualityVideo
-        print("✅ Alternative stream types imported")
-    except ImportError:
-        print("⚠️ Creating fallback stream types")
-        # Fallback: sử dụng string path trực tiếp
-        AudioPiped = str
-        AudioVideoPiped = str
-        HighQualityAudio = lambda: None
-        MediumQualityVideo = lambda: None
-
-# Import other types
-try:
-    from pytgcalls.types import Update
-    from pytgcalls.types.stream import StreamAudioEnded
-    print("✅ Update types imported")
-except ImportError:
-    Update = object
-    StreamAudioEnded = object
-    print("⚠️ Using fallback update types")
-
+from pytgcalls.exceptions import AlreadyJoined, NotInCall, TelegramServerError
+from pytgcalls.exceptions import AlreadyJoinedError as AlreadyJoined
+from pytgcalls.exceptions import NoActiveGroupCall as NotInCall
+from pytgcalls.exceptions import TelegramServerError
+         
+from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
+from pytgcalls.types.input_stream.quality import HighQualityAudio, MediumQualityVideo
+from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, MediumQualityVideo
+from pytgcalls.types import Update
+from pytgcalls.types.stream import StreamAudioEnded
+    
 import config
 from SANKIXD import LOGGER, YouTube, app
 from SANKIXD.misc import db
