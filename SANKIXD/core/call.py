@@ -7,13 +7,10 @@ from typing import Union
 from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup
 from pytgcalls import PyTgCalls
-         
+from pytgcalls.types.stream import StreamAudioEnded
 from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
 from pytgcalls.types.input_stream.quality import HighQualityAudio, MediumQualityVideo
 
-from pytgcalls.types.stream import StreamAudioEnded
-
-    
 import config
 from SANKIXD import LOGGER, YouTube, app
 from SANKIXD.misc import db
@@ -35,6 +32,7 @@ from SANKIXD.utils.inline.play import stream_markup
 from SANKIXD.utils.stream.autoclear import auto_clean
 from SANKIXD.utils.thumbnails import get_thumb
 from strings import get_string
+
 
 autoend = {}
 counter = {}
