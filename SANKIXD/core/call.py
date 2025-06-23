@@ -743,18 +743,27 @@ class Call:  # ✅ sửa lại
     
     
     async def start(self):
-             LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
-             try:
-                for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
-                    if client:
-                        try:
-                            await client.start()
-                            LOGGER(__name__).info(f"Started client {i}")
-                        except Exception as e:
-                            LOGGER(__name__).error(f"Error starting client {i}: {e}")
-             except Exception as e:
-                LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
-             asyncio.create_task(self.auto_leaver_loop())
+        LOGGER(__name__).info("🚀 [START] Initializing all PyTgCalls clients...")
+    
+        try:
+            for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
+                if client:
+                    try:
+                        await client.start()
+                        LOGGER(__name__).info(f"✅ Started assistant client {i}")
+                    except Exception as e:
+                        LOGGER(__name__).error(f"❌ Error starting client {i}: {e}")
+        except Exception as e:
+            LOGGER(__name__).error(f"🔥 Error during client startup: {e}")
+    
+        LOGGER(__name__).info("✅ All clients started. Starting auto leaver loop...")
+    
+        try:
+            asyncio.create_task(self.auto_leaver_loop())
+            LOGGER(__name__).info("🟢 auto_leaver_loop task scheduled")
+        except Exception as e:
+            LOGGER(__name__).error(f"❌ Failed to start auto_leaver_loop: {e}")
+
 
     
     async def decorators(self):
@@ -810,8 +819,13 @@ class Call:  # ✅ sửa lại
                 await self._reliable_leave_call(assistant, chat_id)
 
     async def auto_leaver_loop(self):
+        LOGGER(__name__).info("👀 [auto_leaver_loop] Started auto leave monitor")
+    
         while True:
             try:
+                total_chats = len(db)
+                LOGGER(__name__).debug(f"🔁 [auto_leaver_loop] Checking {total_chats} chat(s)...")
+    
                 for chat_id, queue in db.items():
                     if not queue or not queue[0]:
                         continue
@@ -824,15 +838,19 @@ class Call:  # ✅ sửa lại
                         continue
     
                     elapsed = (datetime.now() - start_time).total_seconds()
-                    if elapsed >= seconds + 2:
-                        print(f"⏰ [autoleaver] Leaving chat {chat_id} — played {int(elapsed)}s / {seconds}s")
+                    if elapsed >= seconds + 3:
+                        LOGGER(__name__).warning(
+                            f"⏰ [auto_leaver_loop] Leaving chat {chat_id} — elapsed {int(elapsed)}s / {seconds}s"
+                        )
                         await _clear_(chat_id)
                         assistant = await group_assistant(self, chat_id)
                         await self._reliable_leave_call(assistant, chat_id)
+    
             except Exception as e:
-                print(f"🔥 [autoleaver] Error: {e}")
+                LOGGER(__name__).error(f"🔥 [auto_leaver_loop] Unhandled error: {e}")
     
             await asyncio.sleep(5)
+
 
 
 async def diagnose_stream(self, chat_id: int):
