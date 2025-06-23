@@ -754,7 +754,6 @@ class Call:  # ✅ sửa lại
                             LOGGER(__name__).error(f"Error starting client {i}: {e}")
              except Exception as e:
                 LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
-
              asyncio.create_task(self.auto_leaver_loop())
 
     
