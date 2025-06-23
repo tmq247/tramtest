@@ -769,10 +769,10 @@ import inspect
 async def ping(self):
          pings = []
          if config.STRING1:
-         ping_fn = getattr(self.one, "ping", None)
-         if inspect.iscoroutinefunction(ping_fn):
-            result = await ping_fn()
-            pings.append(result)
+                  ping_fn = getattr(self.one, "ping", None)
+                  if inspect.iscoroutinefunction(ping_fn):
+                     result = await ping_fn()
+                     pings.append(result)
          return str(round(sum(pings) / len(pings), 3)) if pings else "0"
 
 
