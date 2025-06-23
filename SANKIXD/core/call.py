@@ -777,86 +777,86 @@ async def ping(self):
 
 
 
-    async def start(self):
-        LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
-        try:
-            for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
-                if client:
-                    try:
-                        await client.start()
-                        LOGGER(__name__).info(f"Started client {i}")
-                    except Exception as e:
-                        LOGGER(__name__).error(f"Error starting client {i}: {e}")
-        except Exception as e:
-            LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
+async def start(self):
+LOGGER(__name__).info("Starting PyTgCalls Client...\\n")
+try:
+   for i, client in enumerate([self.one, self.two, self.three, self.four, self.five], 1):
+       if client:
+           try:
+               await client.start()
+               LOGGER(__name__).info(f"Started client {i}")
+           except Exception as e:
+               LOGGER(__name__).error(f"Error starting client {i}: {e}")
+except Exception as e:
+   LOGGER(__name__).error(f"Error starting PyTgCalls: {e}")
 
-    async def decorators(self):
-        try:
-            # Simplified decorators với error handling
-            clients = [self.one, self.two, self.three, self.four, self.five]
-            
-            for client in clients:
-                if client:
-                    try:
-                        # Try to set decorators if methods exist
-                        if hasattr(client, 'on_kicked'):
-                            @client.on_kicked()
-                            async def on_kicked_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        if hasattr(client, 'on_closed_voice_chat'):
-                            @client.on_closed_voice_chat()
-                            async def on_closed_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        if hasattr(client, 'on_left'):
-                            @client.on_left()
-                            async def on_left_handler(_, chat_id: int):
-                                await self.stop_stream(chat_id)
-                        
-                        if hasattr(client, 'on_stream_end'):
-                            @self.one.on_stream_end()
-                            async def stream_end_handler1(client, update: Update):
-                                if not isinstance(update, StreamAudioEnded):
-                                    return
-                                await self.change_stream(client, update.chat_id)
-                                try:
-                                    if hasattr(update, 'chat_id'):
-                                        chat_id = update.chat_id
-                                        print(f"🎵 Stream ended in chat {chat_id}")
-                                        
-                                        # Kiểm tra queue trước khi xử lý
-                                        check = db.get(chat_id)
-                                        if not check or len(check) == 0:
-                                            print(f"🚪 No more songs in queue for chat {chat_id}, auto-leaving...")
-                                            await _clear_(chat_id)
-                                            await self._reliable_leave_call(client_instance, chat_id)
-                                        else:
-                                            print(f"🎵 Queue has {len(check)} songs, playing next...")
-                                            # Đảm bảo chuyển bài ngay lập tức
-                                            try:
-                                                await self.change_stream(client_instance, chat_id)
-                                            except Exception as stream_error:
-                                                print(f"❌ Error changing stream: {stream_error}")
-                                                # Thử lại với force method
-                                                try:
-                                                    await self.force_next_song(chat_id)
-                                                except:
-                                                    print(f"❌ Force next song also failed for chat {chat_id}")
-                                except Exception as e:
-                                    print(f"❌ Error in stream end handler: {e}")
-                                    # Fallback: cố gắng thoát nếu có lỗi
-                                    try:
-                                        chat_id = getattr(update, 'chat_id', None)
-                                        if chat_id:
-                                            await self._reliable_leave_call(client_instance, chat_id)
-                                    except:
-                                        pass
-                    except Exception as e:
-                        LOGGER(__name__).error(f"Error setting decorators for client: {e}")
-                        
-        except Exception as e:
-            LOGGER(__name__).error(f"Error setting decorators: {e}")
+async def decorators(self):
+try:
+   # Simplified decorators với error handling
+   clients = [self.one, self.two, self.three, self.four, self.five]
+   
+   for client in clients:
+       if client:
+           try:
+               # Try to set decorators if methods exist
+               if hasattr(client, 'on_kicked'):
+                   @client.on_kicked()
+                   async def on_kicked_handler(_, chat_id: int):
+                       await self.stop_stream(chat_id)
+               
+               if hasattr(client, 'on_closed_voice_chat'):
+                   @client.on_closed_voice_chat()
+                   async def on_closed_handler(_, chat_id: int):
+                       await self.stop_stream(chat_id)
+               
+               if hasattr(client, 'on_left'):
+                   @client.on_left()
+                   async def on_left_handler(_, chat_id: int):
+                       await self.stop_stream(chat_id)
+               
+               if hasattr(client, 'on_stream_end'):
+                   @self.one.on_stream_end()
+                   async def stream_end_handler1(client, update: Update):
+                       if not isinstance(update, StreamAudioEnded):
+                           return
+                       await self.change_stream(client, update.chat_id)
+                       try:
+                           if hasattr(update, 'chat_id'):
+                               chat_id = update.chat_id
+                               print(f"🎵 Stream ended in chat {chat_id}")
+                               
+                               # Kiểm tra queue trước khi xử lý
+                               check = db.get(chat_id)
+                               if not check or len(check) == 0:
+                                   print(f"🚪 No more songs in queue for chat {chat_id}, auto-leaving...")
+                                   await _clear_(chat_id)
+                                   await self._reliable_leave_call(client_instance, chat_id)
+                               else:
+                                   print(f"🎵 Queue has {len(check)} songs, playing next...")
+                                   # Đảm bảo chuyển bài ngay lập tức
+                                   try:
+                                       await self.change_stream(client_instance, chat_id)
+                                   except Exception as stream_error:
+                                       print(f"❌ Error changing stream: {stream_error}")
+                                       # Thử lại với force method
+                                       try:
+                                           await self.force_next_song(chat_id)
+                                       except:
+                                           print(f"❌ Force next song also failed for chat {chat_id}")
+                       except Exception as e:
+                           print(f"❌ Error in stream end handler: {e}")
+                           # Fallback: cố gắng thoát nếu có lỗi
+                           try:
+                               chat_id = getattr(update, 'chat_id', None)
+                               if chat_id:
+                                   await self._reliable_leave_call(client_instance, chat_id)
+                           except:
+                               pass
+           except Exception as e:
+               LOGGER(__name__).error(f"Error setting decorators for client: {e}")
+               
+except Exception as e:
+   LOGGER(__name__).error(f"Error setting decorators: {e}")
 
 
 SANKI = Call()
