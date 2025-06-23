@@ -809,6 +809,32 @@ class Call:  # ✅ sửa lại
                 assistant = await group_assistant(self, chat_id)
                 await self._reliable_leave_call(assistant, chat_id)
 
+    async def auto_leaver_loop(self):
+        while True:
+            try:
+                for chat_id, queue in db.items():
+                    if not queue or not queue[0]:
+                        continue
+    
+                    song = queue[0]
+                    start_time = song.get("start_time")
+                    seconds = song.get("seconds", 0)
+    
+                    if not start_time or not seconds:
+                        continue
+    
+                    elapsed = (datetime.now() - start_time).total_seconds()
+                    if elapsed >= seconds + 2:
+                        print(f"⏰ [autoleaver] Leaving chat {chat_id} — played {int(elapsed)}s / {seconds}s")
+                        await _clear_(chat_id)
+                        assistant = await group_assistant(self, chat_id)
+                        await self._reliable_leave_call(assistant, chat_id)
+            except Exception as e:
+                print(f"🔥 [autoleaver] Error: {e}")
+    
+            await asyncio.sleep(5)
+
+
 async def diagnose_stream(self, chat_id: int):
     from pprint import pprint
     
@@ -845,28 +871,4 @@ async def diagnose_stream(self, chat_id: int):
 
 
 SANKI = Call()
-async def auto_leaver_loop(self):
-    while True:
-        try:
-            for chat_id, queue in db.items():
-                if not queue or not queue[0]:
-                    continue
-
-                current = queue[0]
-                start_time = current.get("start_time")
-                seconds = current.get("seconds", 0)
-
-                if not start_time or not seconds:
-                    continue
-
-                elapsed = (datetime.now() - start_time).total_seconds()
-                if elapsed >= seconds + 2:
-                    print(f"⏰ Autoleaver: Leaving chat {chat_id} (elapsed {elapsed} ≥ {seconds})")
-                    await _clear_(chat_id)
-                    assistant = await group_assistant(self, chat_id)
-                    await self._reliable_leave_call(assistant, chat_id)
-        except Exception as e:
-            print(f"🔥 Autoleaver error: {e}")
-
-        await asyncio.sleep(5)
 
