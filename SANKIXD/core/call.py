@@ -468,9 +468,10 @@ class Call:  # ✅ sửa lại
     async def change_stream(self, client, chat_id):
         check = db.get(chat_id)
         duration = check[0].get("seconds", 0)
-        
         db[chat_id][0]["start_time"] = datetime.now()
         db[chat_id][0]["played"] = 0
+        
+        asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
         popped = None
         loop = await get_loop(chat_id)
         
@@ -518,23 +519,6 @@ class Call:  # ✅ sửa lại
                 print(f"[stream_check] Giây còn lại: {check[0].get('seconds')} – Tiêu đề: {check[0].get('title')}")
 
                 return
-            async def watchdog(chat_id, duration):
-                await asyncio.sleep(duration + 2)
-                queue = db.get(chat_id)
-                if not queue:
-                    return
-                song = queue[0]
-                if song.get("seconds", 0) <= 5:
-                    print(f"[watchdog] Force stop {chat_id} – stream không kết thúc hợp lệ.")
-                    await _clear_(chat_id)
-                    assistant = await group_assistant(self, chat_id)
-                    try:
-                        await assistant.leave_group_call(chat_id)
-                    except Exception as e:
-                        print(f"[watchdog-error] {e}")
-
-            duration = check[0].get("seconds", 0)
-            asyncio.create_task(watchdog(chat_id, duration))
                 
         except Exception as e:
             print(f"❌ Error in change_stream processing: {e}")
@@ -546,23 +530,7 @@ class Call:  # ✅ sửa lại
                 assistant = await group_assistant(self, chat_id)
                 await self._reliable_leave_call(client, chat_id)
                 return
-            async def watchdog(chat_id, duration):
-                await asyncio.sleep(duration + 2)
-                queue = db.get(chat_id)
-                if not queue:
-                    return
-                song = queue[0]
-                if song.get("seconds", 0) <= 5:
-                    print(f"[watchdog] Force stop {chat_id} – stream không kết thúc hợp lệ.")
-                    await _clear_(chat_id)
-                    assistant = await group_assistant(self, chat_id)
-                    try:
-                        await assistant.leave_group_call(chat_id)
-                    except Exception as e:
-                        print(f"[watchdog-error] {e}")
             
-            duration = check[0].get("seconds", 0)
-            asyncio.create_task(watchdog(chat_id, duration))
         else:
             # Nếu có queue, tiếp tục play bài tiếp theo
             queued = check[0]["file"]
@@ -791,6 +759,28 @@ class Call:  # ✅ sửa lại
                             
              except Exception as e:
                 LOGGER(__name__).error(f"Error setting decorators: {e}")
+
+    async def _watchdog_force_leave(self, chat_id: int, duration: int):
+            """Ép bot rời call nếu bài hát phát hết mà không tự dừng"""
+            await asyncio.sleep(duration + 3)
+            queue = db.get(chat_id)
+            if not queue or not queue[0]:
+                return
+            song = queue[0]
+            
+            start_time = song.get("start_time")
+            if not start_time:
+                return
+            
+            played = (datetime.now() - start_time).seconds
+            total = song.get("seconds", 0)
+            
+            if played >= total - 1:
+                print(f"[watchdog] 🛑 Forcing leave for chat {chat_id} after timeout")
+                await _clear_(chat_id)
+                assistant = await group_assistant(self, chat_id)
+                await self._reliable_leave_call(assistant, chat_id)
+
 
 
 SANKI = Call()
