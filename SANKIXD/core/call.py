@@ -394,6 +394,8 @@ class Call:  # ✅ sửa lại
                     break
         except:
             pass
+        await SANKI.diagnose_stream(chat_id)
+
 
     async def _reliable_leave_call(self, client, chat_id):
         """Hàm thoát cuộc gọi đáng tin cậy với pytgcalls 2.2.1"""
@@ -419,6 +421,9 @@ class Call:  # ✅ sửa lại
                 except Exception as e:
                     print(f"⚠️ Failed to leave chat {chat_id} with {method_name}: {e}")
                     continue
+
+        await SANKI.diagnose_stream(chat_id)
+
         
         # Nếu tất cả method đều thất bại, thử với tất cả client có sẵn
         if not left_successfully:
@@ -442,6 +447,8 @@ class Call:  # ✅ sửa lại
             print(f"❌ Could not leave chat {chat_id} with any method")
         
         return left_successfully
+        await SANKI.diagnose_stream(chat_id)
+
 
     async def force_next_song(self, chat_id):
         """Force chuyển sang bài tiếp theo trong queue ngay lập tức"""
@@ -472,7 +479,8 @@ class Call:  # ✅ sửa lại
             await _clear_(chat_id)
             assistant = await group_assistant(self, chat_id)
             await self._reliable_leave_call(assistant, chat_id)
-            return
+            return await SANKI.diagnose_stream(chat_id)
+
     
         duration = check[0].get("seconds", 0)
         db[chat_id][0]["start_time"] = datetime.now()
@@ -492,13 +500,18 @@ class Call:  # ✅ sửa lại
     
             if popped:
                 await auto_clean(popped)
+                await SANKI.diagnose_stream(chat_id)
+
     
             if not check or len(check) == 0 or check[0].get("seconds", 0) <= 4:
                 print(f"🚪 Queue empty after pop, leaving call for chat {chat_id}")
                 await _clear_(chat_id)
                 assistant = await group_assistant(self, chat_id)
                 await self._reliable_leave_call(assistant, chat_id)
-                return
+                await SANKI.diagnose_stream(chat_id)
+
+                return await SANKI.diagnose_stream(chat_id)
+
     
             stream = self.prepare_stream(
                 check[0]["file"], is_video=(check[0]["streamtype"] == "video")
@@ -508,9 +521,13 @@ class Call:  # ✅ sửa lại
                 if hasattr(assistant, method_name):
                     try:
                         await getattr(assistant, method_name)(chat_id, stream)
+                        await SANKI.diagnose_stream(chat_id)
+
                         break
                     except Exception as e:
                         print(f"⚠️ {method_name} failed: {e}")
+                        await SANKI.diagnose_stream(chat_id)
+
                         continue
     
         except Exception as e:
@@ -521,12 +538,15 @@ class Call:  # ✅ sửa lại
                 await _clear_(chat_id)
                 assistant = await group_assistant(self, chat_id)
                 await self._reliable_leave_call(assistant, chat_id)
-                return
+                return await SANKI.diagnose_stream(chat_id)
+
     
             duration = check[0].get("seconds", 0)
             db[chat_id][0]["start_time"] = datetime.now()
             db[chat_id][0]["played"] = 0
             asyncio.create_task(self._watchdog_force_leave(chat_id, duration))
+            await SANKI.diagnose_stream(chat_id)
+
                 
         else:
             # Nếu có queue, tiếp tục play bài tiếp theo
@@ -709,7 +729,11 @@ class Call:  # ✅ sửa lại
                       if inspect.iscoroutinefunction(ping_fn):
                          result = await ping_fn()
                          pings.append(result)
-             return str(round(sum(pings) / len(pings), 3)) if pings else "0"
+                         await SANKI.diagnose_stream(chat_id)
+                         return str(round(sum(pings) / len(pings), 3)) if pings else "0"
+             await SANKI.diagnose_stream(chat_id)
+
+        
     
     
     
@@ -778,6 +802,39 @@ class Call:  # ✅ sửa lại
                 assistant = await group_assistant(self, chat_id)
                 await self._reliable_leave_call(assistant, chat_id)
 
+async def diagnose_stream(self, chat_id: int):
+    from pprint import pprint
+    
+    print(f"📋 [DIAGNOSE] Kiểm tra trạng thái phát nhạc của chat {chat_id}...\n")
+    
+    try:
+        queue = db.get(chat_id)
+        if not queue:
+            print("❌ Queue rỗng hoặc không tồn tại.")
+            return
+        
+        current = queue[0]
+        print("🎵 Bài hát hiện tại:")
+        pprint(current)
+        
+        start_time = current.get("start_time")
+        seconds = current.get("seconds", 0)
+        played = (datetime.now() - start_time).seconds if start_time else None
+        
+        print(f"\n⏱️ Tổng thời lượng: {seconds} giây")
+        print(f"⏱️ Đã phát được: {played} giây" if played is not None else "⛔ start_time chưa được gán.")
+        
+        assistant = await group_assistant(self, chat_id)
+        leaveable = False
+        for method in ["leave_group_call", "leave_call", "stop", "disconnect"]:
+            if hasattr(assistant, method):
+                leaveable = True
+                break
+        print(f"🎧 Assistant hiện tại: {assistant.__class__.__name__}")
+        print(f"✅ Có thể thoát call: {'Có' if leaveable else 'Không'}")
+    
+    except Exception as e:
+        print(f"❌ Lỗi khi chạy diagnose: {e}")
 
 
 SANKI = Call()
