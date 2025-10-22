@@ -7,15 +7,6 @@ languages = {}
 languages_present = {}
 
 
-import os
-from typing import List
-
-import yaml
-
-languages = {}
-languages_present = {}
-
-
 def get_string(lang: str):
     return languages[lang]
 
