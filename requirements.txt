@@ -55,3 +55,4 @@ img2pdf
 cloudscraper
 pycryptodome
 opencv-python
+py-yt-search
