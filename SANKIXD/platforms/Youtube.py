@@ -389,7 +389,7 @@ class YouTubeAPI:
                     "--cookies",cookie_txt_file(),
                     "-g",
                     "-f",
-                    "bestvideo+bestaudio/best"
+                    "bestvideo+bestaudio/best",
                     f"{link}",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
