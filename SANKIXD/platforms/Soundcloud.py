@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 from yt_dlp import YoutubeDL
 
-from SANKIXD.utils.downloader import download_audio_concurrent
+from SANKIXD.utils.downloader import download
 
 
 
@@ -48,7 +48,7 @@ class SoundAPI:
         duration_sec = int(info.get("duration") or 0)
         uploader = info.get("uploader") or ""
 
-        out_path: Optional[str] = await download_audio_concurrent(url)
+        out_path: Optional[str] = await download(url)
         if not out_path:
             return False
 
