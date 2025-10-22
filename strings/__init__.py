@@ -24,11 +24,13 @@ for filename in os.listdir(r"./strings/langs/"):
         languages[language_name] = yaml.safe_load(
             open(r"./strings/langs/" + filename, encoding="utf8")
         )
+        # fill missing keys from EN
         for item in languages["en"]:
             if item not in languages[language_name]:
                 languages[language_name][item] = languages["en"][item]
-    try:
-        languages_present[language_name] = languages[language_name]["name"]
-    except:
-        print("There is some issue with the language file inside bot.")
-        exit()
+        # ✅ chỉ set khi chắc chắn có language_name
+        try:
+            languages_present[language_name] = languages[language_name]["name"]
+        except Exception:
+            print("There is some issue with the language file inside bot.")
+            exit()
